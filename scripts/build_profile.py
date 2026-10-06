@@ -103,8 +103,10 @@ def collect():
         for repo in repos:
             for name, size in fetch(repo["languages_url"]).items():
                 languages[name] = languages.get(name, 0) + size
+        recent = sorted((r for r in repos if r["name"].lower() != USER.lower()), key=lambda r: r["pushed_at"], reverse=True)
         data.update(repos=user.get("public_repos", len(repos)), stars=sum(r["stargazers_count"] for r in repos),
-                    languages=sorted(languages.items(), key=lambda item: -item[1]))
+                    languages=sorted(languages.items(), key=lambda item: -item[1]),
+                    recent=[[r["name"], r["language"] or "", r["pushed_at"][:10]] for r in recent[:5]])
     except Exception:
         pass
     CACHE.write_text(json.dumps(data), encoding="utf-8")
@@ -173,6 +175,9 @@ def hero():
     stars = "".join(
         f'<circle class="star" cx="{(i * 197) % width}" cy="{(i * 131) % height}" r="{1 + (i % 3) * 0.6:.1f}" '
         f'style="animation-delay:{(i * 0.37) % 4:.2f}s"/>' for i in range(46))
+    stars += "".join(
+        f'<line class="shoot" x1="{x}" y1="{y}" x2="{x + 90}" y2="{y + 34}" style="animation-delay:{delay}s"/>'
+        for x, y, delay in ((120, 20, 0), (520, -10, 3.5), (860, 30, 6.5)))
     bars = "".join(f'<rect class="bar" x="{74 + i * 12}" y="356" width="6" height="34" rx="3" '
                    f'style="animation-delay:{(i * 0.29) % 1.2:.2f}s"/>' for i in range(30))
     cycle = len(TAGLINES) * 5
@@ -200,6 +205,7 @@ def hero():
 .reveal{{transform-box:fill-box;transform-origin:left;transform:scaleX(0);animation:type {cycle}s steps(34) infinite}}
 .blob{{animation:drift 14s ease-in-out infinite alternate}}
 .star{{fill:{TEXT};opacity:.15;animation:twinkle 4s ease-in-out infinite}}
+.shoot{{stroke:{TEXT};stroke-width:2;stroke-linecap:round;opacity:0;animation:shoot 9s ease-in infinite}}
 .bones line{{stroke:url(#bone);stroke-width:3.4;stroke-linecap:round}}
 .joint{{fill:{BG};stroke:{CYAN};stroke-width:2.6;animation:pulse 2.6s ease-in-out infinite}}
 .ring{{fill:none;stroke:{GREEN};stroke-width:3;opacity:0;transform-box:fill-box;transform-origin:center;animation:tap 2.6s ease-out infinite}}
@@ -213,6 +219,7 @@ def hero():
 @keyframes type{{0%{{transform:scaleX(0)}}{share * 0.45:.1f}%{{transform:scaleX(1)}}{share:.1f}%{{transform:scaleX(1)}}100%{{transform:scaleX(1)}}}}
 @keyframes drift{{0%{{transform:translate(0,0)}}100%{{transform:translate(90px,-40px)}}}}
 @keyframes twinkle{{0%,100%{{opacity:.08}}50%{{opacity:.6}}}}
+@keyframes shoot{{0%{{opacity:0;transform:translate(-80px,-30px)}}3%{{opacity:.9}}9%{{opacity:0;transform:translate(330px,125px)}}100%{{opacity:0;transform:translate(330px,125px)}}}}
 @keyframes pulse{{0%,100%{{stroke:{CYAN}}}50%{{stroke:{PINK}}}}}
 @keyframes tap{{0%{{opacity:1;transform:scale(.3)}}70%{{opacity:0;transform:scale(3.4)}}100%{{opacity:0}}}}
 @keyframes spin{{to{{transform:rotate(360deg)}}}}
@@ -467,11 +474,211 @@ def divider():
     return svg(width, height, "", body, style)
 
 
+ORBITS = [
+    (112, 34, CYAN, ["Python", "JavaScript", "Kotlin", "Java"]),
+    (176, 52, VIOLET, ["React", "Node.js", "Django", "Next.js", "Android"]),
+    (240, 74, PINK, ["OpenCV", "MediaPipe", "scikit-learn", "MongoDB", "PostgreSQL", "Docker"]),
+]
+
+
+def orbit():
+    width, height = 1200, 560
+    cx, cy = 600, 290
+    rings = ""
+    for index, (radius, seconds, colour, names) in enumerate(ORBITS):
+        pills = ""
+        for i, name in enumerate(names):
+            angle = 2 * math.pi * i / len(names) + index * 0.6
+            x, y = cx + radius * math.cos(angle), cy + radius * math.sin(angle)
+            w = len(name) * 8.6 + 26
+            pills += (f'<g transform="translate({x:.1f} {y:.1f})"><g class="pill" style="animation-duration:{seconds}s">'
+                      f'<rect x="{-w / 2:.1f}" y="-15" width="{w:.1f}" height="30" rx="15" fill="{BG}" stroke="{colour}" stroke-width="1.6"/>'
+                      f'<text class="pt" y="5" text-anchor="middle" fill="{colour}">{name}</text></g></g>')
+        direction = "reverse" if index % 2 else "normal"
+        rings += (f'<circle cx="{cx}" cy="{cy}" r="{radius}" fill="none" stroke="{colour}" stroke-width="1.2" '
+                  f'stroke-dasharray="2 9" opacity=".45"/>'
+                  f'<g class="ring" style="animation-duration:{seconds}s;animation-direction:{direction}">'
+                  f'{pills.replace("class=\"pill\" style=\"", f"class=\"pill\" style=\"animation-direction:{"normal" if index % 2 else "reverse"};")}</g>')
+    legend = "".join(
+        f'<circle cx="64" cy="{164 + i * 34}" r="6" fill="{colour}"/><text class="lg" x="82" y="{169 + i * 34}">{label}</text>'
+        for i, (label, colour) in enumerate((("Languages", CYAN), ("Frameworks", VIOLET), ("ML, data and tools", PINK))))
+    style = f"""
+.h{{font:800 30px {FONT};fill:{TEXT};letter-spacing:-.4px}}
+.s{{font:600 13px {MONO};fill:{MUTED};letter-spacing:1.5px}}
+.lg{{font:600 15px {FONT};fill:{TEXT}}}
+.pt{{font:700 13px {MONO}}}
+.core{{font:800 20px {FONT};fill:{TEXT}}}
+.ring{{transform-origin:{cx}px {cy}px;animation:spin 40s linear infinite}}
+.pill{{transform-box:fill-box;transform-origin:center;animation:spin 40s linear infinite}}
+.sun{{animation:breathe 4s ease-in-out infinite;transform-origin:{cx}px {cy}px}}
+@keyframes spin{{to{{transform:rotate(360deg)}}}}
+@keyframes breathe{{0%,100%{{transform:scale(1)}}50%{{transform:scale(1.09)}}}}"""
+    body = f"""<rect x="1" y="1" width="{width - 2}" height="{height - 2}" rx="18" fill="url(#panel)" stroke="{EDGE}" stroke-width="1.5"/>
+<text class="h" x="46" y="60">My stack, in orbit</text>
+<text class="s" x="46" y="86">WHAT I REACH FOR, CLOSEST FIRST</text>
+{legend}
+<circle class="sun" cx="{cx}" cy="{cy}" r="46" fill="url(#neon)" filter="url(#glow)"/>
+<circle cx="{cx}" cy="{cy}" r="38" fill="{BG}"/>
+<text class="core" x="{cx}" y="{cy + 7}" text-anchor="middle">build</text>
+{rings}"""
+    return svg(width, height, "Technology stack shown as orbits", body, style)
+
+
+def pipeline():
+    width, height = 1200, 360
+    lanes = [
+        (118, CYAN, ["Webcam", "21 hand landmarks", "Per-finger classifiers", "Cursor, click, scroll"]),
+        (246, PINK, ["Microphone", "Speech to text", "Command parser", "Apps, music, system"]),
+    ]
+    xs, box_w, box_h = [46, 330, 614, 898], 256, 78
+    parts = ""
+    for lane, (y, colour, labels) in enumerate(lanes):
+        for i, label in enumerate(labels):
+            x = xs[i]
+            parts += (f'<rect x="{x}" y="{y}" width="{box_w}" height="{box_h}" rx="14" fill="{BG}" stroke="{colour}" '
+                      f'stroke-width="1.6" opacity="{1 if i in (0, 3) else .9}"/>'
+                      f'<text class="step" x="{x + 20}" y="{y + 30}" fill="{colour}">0{i + 1}</text>'
+                      f'<text class="lab" x="{x + 20}" y="{y + 56}">{label}</text>')
+            if i < 3:
+                x0, x1, mid = x + box_w, xs[i + 1], y + box_h / 2
+                path = f"M{x0} {mid} H{x1}"
+                parts += f'<path d="{path}" stroke="{colour}" stroke-width="2" stroke-dasharray="4 6" opacity=".6" fill="none"/>'
+                for k in range(2):
+                    parts += (f'<circle r="5" fill="{colour}" filter="url(#glow)"><animateMotion dur="1.6s" '
+                              f'begin="{i * 0.45 + k * 0.8 + lane * 0.3:.2f}s" repeatCount="indefinite" path="{path}"/></circle>')
+    style = f"""
+.h{{font:800 30px {FONT};fill:{TEXT};letter-spacing:-.4px}}
+.s{{font:600 13px {MONO};fill:{MUTED};letter-spacing:1.5px}}
+.step{{font:800 13px {MONO};letter-spacing:1px}}
+.lab{{font:700 18px {FONT};fill:{TEXT}}}"""
+    body = f"""<rect x="1" y="1" width="{width - 2}" height="{height - 2}" rx="18" fill="url(#panel)" stroke="{EDGE}" stroke-width="1.5"/>
+<text class="h" x="46" y="56">From a wave or a sentence to an action</text>
+<text class="s" x="46" y="82">HOW HANDS FREE COMPUTER WORKS, END TO END</text>
+{parts}"""
+    return svg(width, height, "How Hands Free Computer turns gestures and speech into actions", body, style)
+
+
+def pulse(data):
+    width, height = 1200, 330
+    days = data.get("days", [])
+    today = datetime.date.today().isoformat()
+    days = [d for d in days if d["date"] <= today]
+    if not days:
+        return svg(width, height, "Activity", "", "")
+    weeks, weekday = [], [0] * 7
+    for i in range(0, len(days), 7):
+        weeks.append(sum(d["count"] for d in days[i:i + 7]))
+    for d in days:
+        weekday[(datetime.date.fromisoformat(d["date"]).weekday() + 1) % 7] += d["count"]
+    x0, x1, y0, y1 = 46, 780, 268, 118
+    top = max(weeks) or 1
+    pts = [(x0 + (x1 - x0) * i / max(len(weeks) - 1, 1), y0 - (y0 - y1) * v / top) for i, v in enumerate(weeks)]
+    line = "M" + " L".join(f"{x:.1f} {y:.1f}" for x, y in pts)
+    area = f"{line} L{x1} {y0} L{x0} {y0} Z"
+    peak = max(range(len(weeks)), key=lambda i: weeks[i])
+    length = sum(math.hypot(pts[i + 1][0] - pts[i][0], pts[i + 1][1] - pts[i][1]) for i in range(len(pts) - 1))
+    grid = "".join(f'<line x1="{x0}" y1="{y0 - (y0 - y1) * k / 3:.0f}" x2="{x1}" y2="{y0 - (y0 - y1) * k / 3:.0f}" '
+                   f'stroke="{EDGE}" stroke-width="1"/>' for k in range(4))
+    names = ["S", "M", "T", "W", "T", "F", "S"]
+    best_day = max(range(7), key=lambda i: weekday[i])
+    bars, bx, bw = "", 860, 30
+    wtop = max(weekday) or 1
+    for i, value in enumerate(weekday):
+        h = 150 * value / wtop
+        colour = PINK if i == best_day else VIOLET
+        bars += (f'<rect class="wb" x="{bx + i * 42}" y="{y0 - h:.1f}" width="{bw}" height="{max(h, 3):.1f}" rx="7" fill="{colour}" '
+                 f'style="animation-delay:{i * 0.12:.2f}s"/>'
+                 f'<text class="ax" x="{bx + i * 42 + bw / 2}" y="{y0 + 24}" text-anchor="middle">{names[i]}</text>')
+    full = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"][best_day]
+    style = f"""
+.h{{font:800 30px {FONT};fill:{TEXT};letter-spacing:-.4px}}
+.s{{font:600 13px {MONO};fill:{MUTED};letter-spacing:1.5px}}
+.ax{{font:600 12px {MONO};fill:{MUTED}}}
+.pk{{font:700 13px {MONO};fill:{GREEN}}}
+.line{{fill:none;stroke:url(#neon);stroke-width:3.5;stroke-linejoin:round;stroke-linecap:round;stroke-dasharray:{length:.0f};animation:draw 9s ease-out infinite}}
+.wb{{transform-box:fill-box;transform-origin:bottom;animation:grow 9s ease-out infinite}}
+.dot{{animation:ping 1.6s ease-out infinite;transform-box:fill-box;transform-origin:center}}
+@keyframes draw{{0%{{stroke-dashoffset:{length:.0f}}}28%,100%{{stroke-dashoffset:0}}}}
+@keyframes grow{{0%{{transform:scaleY(.05)}}18%,100%{{transform:scaleY(1)}}}}
+@keyframes ping{{0%{{transform:scale(.6);opacity:1}}100%{{transform:scale(2.6);opacity:0}}}}"""
+    fade = (f'<linearGradient id="fade" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="{VIOLET}" stop-opacity=".45"/>'
+            f'<stop offset="1" stop-color="{VIOLET}" stop-opacity="0"/></linearGradient>')
+    body = f"""<rect x="1" y="1" width="{width - 2}" height="{height - 2}" rx="18" fill="url(#panel)" stroke="{EDGE}" stroke-width="1.5"/>
+<text class="h" x="46" y="56">Pulse</text>
+<text class="s" x="46" y="82">CONTRIBUTIONS PER WEEK, LAST 12 MONTHS</text>
+<text class="s" x="{bx}" y="82">BY WEEKDAY. BUSIEST: {full.upper()}</text>
+{grid}
+<path d="{area}" fill="url(#fade)"/>
+<path class="line" d="{line}"/>
+<circle class="dot" cx="{pts[peak][0]:.1f}" cy="{pts[peak][1]:.1f}" r="8" fill="{GREEN}"/>
+<circle cx="{pts[peak][0]:.1f}" cy="{pts[peak][1]:.1f}" r="5" fill="{GREEN}"/>
+<text class="pk" x="{min(pts[peak][0] + 14, x1 - 150):.0f}" y="{pts[peak][1] - 10:.0f}">peak week: {weeks[peak]}</text>
+{bars}"""
+    return svg(width, height, "Weekly contribution pulse and weekday breakdown", body, style, fade)
+
+
+def activity(data):
+    width, height = 1200, 300
+    recent = data.get("recent", [])[:5]
+    today = datetime.date.today()
+    rows = ""
+    for i, (name, language, pushed) in enumerate(recent):
+        y = 118 + i * 34
+        ago = (today - datetime.date.fromisoformat(pushed)).days
+        when = "today" if ago <= 0 else "yesterday" if ago == 1 else f"{ago} days ago"
+        colour = LANG_COLOURS.get(language, MUTED)
+        rows += (f'<g class="row" style="animation-delay:{i * 0.18:.2f}s">'
+                 f'<text class="hash" x="46" y="{y}">{i + 1:02d}</text>'
+                 f'<text class="repo" x="92" y="{y}">{name}</text>'
+                 f'<circle cx="640" cy="{y - 5}" r="6" fill="{colour}"/>'
+                 f'<text class="lang" x="656" y="{y}">{language or "mixed"}</text>'
+                 f'<text class="when" x="{width - 46}" y="{y}" text-anchor="end">pushed {when}</text></g>')
+    style = f"""
+.h{{font:800 30px {FONT};fill:{TEXT};letter-spacing:-.4px}}
+.s{{font:600 13px {MONO};fill:{MUTED};letter-spacing:1.5px}}
+.hash{{font:700 15px {MONO};fill:{EDGE}}}
+.repo{{font:700 18px {MONO};fill:{CYAN}}}
+.lang{{font:600 15px {FONT};fill:{TEXT}}}
+.when{{font:600 14px {MONO};fill:{MUTED}}}
+.row{{animation:slide 8s ease-out infinite}}
+.live{{animation:blink 1.4s ease-in-out infinite}}
+@keyframes slide{{0%{{opacity:0;transform:translateX(-18px)}}8%,100%{{opacity:1;transform:translateX(0)}}}}
+@keyframes blink{{0%,100%{{opacity:1}}50%{{opacity:.25}}}}"""
+    body = f"""<rect x="1" y="1" width="{width - 2}" height="{height - 2}" rx="18" fill="url(#panel)" stroke="{EDGE}" stroke-width="1.5"/>
+<text class="h" x="46" y="56">Latest pushes</text>
+<circle class="live" cx="{width - 172}" cy="50" r="6" fill="{GREEN}"/>
+<text class="s" x="{width - 158}" y="55">UPDATED {today.strftime("%d %b").upper()}</text>
+<text class="s" x="46" y="82">WHAT I TOUCHED MOST RECENTLY</text>
+{rows}"""
+    return svg(width, height, "Most recently pushed repositories", body, style)
+
+
+def footer():
+    width, height = 1200, 170
+    waves = ""
+    for i, (colour, opacity, seconds, base) in enumerate(((VIOLET, .35, 11, 96), (CYAN, .3, 8, 108), (PINK, .28, 14, 120))):
+        d = f"M-600 {base}" + "".join(f" q150 {-26 if k % 2 == 0 else 26} 300 0" for k in range(8)) + f" V{height} H-600 Z"
+        waves += f'<path class="w" d="{d}" fill="{colour}" opacity="{opacity}" style="animation-duration:{seconds}s"/>'
+    style = f"""
+.t{{font:800 24px {FONT};fill:{TEXT}}}
+.u{{font:600 13px {MONO};fill:{MUTED};letter-spacing:1.5px}}
+.w{{animation:flow 10s linear infinite}}
+@keyframes flow{{to{{transform:translateX(600px)}}}}"""
+    body = f"""<clipPath id="f"><rect x="1" y="1" width="{width - 2}" height="{height - 2}" rx="18"/></clipPath>
+<rect x="1" y="1" width="{width - 2}" height="{height - 2}" rx="18" fill="url(#panel)" stroke="{EDGE}" stroke-width="1.5"/>
+<g clip-path="url(#f)">{waves}</g>
+<text class="t" x="{width / 2}" y="52" text-anchor="middle">Thanks for stopping by</text>
+<text class="u" x="{width / 2}" y="78" text-anchor="middle">IF SOMETHING HERE IS USEFUL TO YOU, SAY HELLO</text>"""
+    return svg(width, height, "Thanks for stopping by", body, style)
+
+
 def main():
     ASSETS.mkdir(exist_ok=True)
     data = collect()
     outputs = {"hero.svg": hero(), "terminal.svg": terminal(data), "stats.svg": stats(data),
-               "skyline.svg": skyline(data), "divider.svg": divider()}
+               "skyline.svg": skyline(data), "divider.svg": divider(), "orbit.svg": orbit(),
+               "pipeline.svg": pipeline(), "pulse.svg": pulse(data), "activity.svg": activity(data),
+               "footer.svg": footer()}
     for project in PROJECTS:
         outputs[f"card-{project['slug']}.svg"] = card(project)
     for name, content in outputs.items():

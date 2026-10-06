@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 170" width="1200" height="170" role="img" aria-label="Thanks for stopping by">
+<defs>
+<linearGradient id="neon" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#00d4ff"/><stop offset=".5" stop-color="#8b5cf6"/><stop offset="1" stop-color="#ff2d95"/></linearGradient>
+<linearGradient id="panel" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#0d1220"/><stop offset="1" stop-color="#070a12"/></linearGradient>
+<filter id="glow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+<filter id="blur" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="70"/></filter>
+</defs>
+<style>
+
+.t{font:800 24px -apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;fill:#eef2ff}
+.u{font:600 13px ui-monospace,SFMono-Regular,'SF Mono',Menlo,Consolas,'Liberation Mono',monospace;fill:#8d99b8;letter-spacing:1.5px}
+.w{animation:flow 10s linear infinite}
+@keyframes flow{to{transform:translateX(600px)}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important}}
+</style>
+<clipPath id="f"><rect x="1" y="1" width="1198" height="168" rx="18"/></clipPath>
+<rect x="1" y="1" width="1198" height="168" rx="18" fill="url(#panel)" stroke="#1d2740" stroke-width="1.5"/>
+<g clip-path="url(#f)"><path class="w" d="M-600 96 q150 -26 300 0 q150 26 300 0 q150 -26 300 0 q150 26 300 0 q150 -26 300 0 q150 26 300 0 q150 -26 300 0 q150 26 300 0 V170 H-600 Z" fill="#8b5cf6" opacity="0.35" style="animation-duration:11s"/><path class="w" d="M-600 108 q150 -26 300 0 q150 26 300 0 q150 -26 300 0 q150 26 300 0 q150 -26 300 0 q150 26 300 0 q150 -26 300 0 q150 26 300 0 V170 H-600 Z" fill="#00d4ff" opacity="0.3" style="animation-duration:8s"/><path class="w" d="M-600 120 q150 -26 300 0 q150 26 300 0 q150 -26 300 0 q150 26 300 0 q150 -26 300 0 q150 26 300 0 q150 -26 300 0 q150 26 300 0 V170 H-600 Z" fill="#ff2d95" opacity="0.28" style="animation-duration:14s"/></g>
+<text class="t" x="600.0" y="52" text-anchor="middle">Thanks for stopping by</text>
+<text class="u" x="600.0" y="78" text-anchor="middle">IF SOMETHING HERE IS USEFUL TO YOU, SAY HELLO</text>
+</svg>
