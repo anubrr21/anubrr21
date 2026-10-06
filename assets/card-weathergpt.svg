@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 590 250" width="590" height="250" role="img" aria-label="WeatherGPT">
+<defs>
+<linearGradient id="neon" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#00d4ff"/><stop offset=".5" stop-color="#8b5cf6"/><stop offset="1" stop-color="#ff2d95"/></linearGradient>
+<linearGradient id="panel" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#0d1220"/><stop offset="1" stop-color="#070a12"/></linearGradient>
+<filter id="glow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+<filter id="blur" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="70"/></filter>
+<linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8b5cf6"/><stop offset="1" stop-color="#ff2d95"/></linearGradient></defs>
+<style>
+
+.title{font:800 27px -apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;fill:#eef2ff;letter-spacing:-.4px}
+.desc{font:500 16.5px -apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;fill:#8d99b8}
+.tag{font:700 12.5px ui-monospace,SFMono-Regular,'SF Mono',Menlo,Consolas,'Liberation Mono',monospace}
+.edge{fill:none;stroke:url(#g);stroke-width:2;stroke-dasharray:240 1340;animation:run 7s linear infinite}
+.icon{fill:none;stroke:url(#g);stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round;animation:beat 3s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
+.halo{animation:halo 5s ease-in-out infinite alternate}
+.arrow{fill:none;stroke:#8d99b8;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+@keyframes run{to{stroke-dashoffset:-1580}}
+@keyframes beat{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+@keyframes halo{0%{opacity:.16}100%{opacity:.36}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important}}
+</style>
+<clipPath id="c"><rect x="1" y="1" width="588" height="248" rx="18"/></clipPath>
+<rect x="1" y="1" width="588" height="248" rx="18" fill="url(#panel)" stroke="#1d2740" stroke-width="1.5"/>
+<g clip-path="url(#c)"><circle class="halo" cx="530" cy="30" r="150" fill="#8b5cf6" filter="url(#blur)"/></g>
+<rect class="edge" x="1" y="1" width="588" height="248" rx="18"/>
+<rect x="34" y="30" width="60" height="60" rx="16" fill="#8b5cf6" opacity=".10"/>
+<g transform="translate(42 37)"><g class="icon"><path d="M12 30a8 8 0 0 1 1-16 11 11 0 0 1 21 3 7 7 0 0 1-1 13z"/><path d="M15 36l-2 5M22 36l-2 5M29 36l-2 5"/></g></g>
+<text class="title" x="112" y="70">WeatherGPT</text>
+<path class="arrow" d="M528 70 l20 -20 M532 50 h16 v16"/>
+<text class="desc" x="34" y="128">Weather assistant for India: official warnings,</text><text class="desc" x="34" y="153">blended forecast models and live stations,</text><text class="desc" x="34" y="178">explained in 13 Indian languages.</text>
+<rect x="34" y="204" width="72" height="26" rx="13" fill="#8b5cf6" opacity=".13"/><text class="tag" x="70" y="222" text-anchor="middle" fill="#8b5cf6">Python</text><rect x="114.4" y="204" width="106" height="26" rx="13" fill="#8b5cf6" opacity=".13"/><text class="tag" x="167" y="222" text-anchor="middle" fill="#8b5cf6">TypeScript</text><rect x="228.4" y="204" width="72" height="26" rx="13" fill="#8b5cf6" opacity=".13"/><text class="tag" x="265" y="222" text-anchor="middle" fill="#8b5cf6">Docker</text>
+</svg>
